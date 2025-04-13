@@ -1,11 +1,19 @@
 // db.js
+require('dotenv').config(); // Load environment variables from .env file
+
 const mysql = require('mysql2');
 
+// Make sure the environment variables are set
+const host = process.env.DB_HOST || 'localhost';
+const user = process.env.DB_USER || 'root';
+const password = process.env.DB_PASSWORD || '';
+const database = process.env.DB_NAME || 'my_database';
+
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '14121611',
-  database: 'hakuda_db',
+  host,
+  user,
+  password,
+  database,
 });
 
 connection.connect((err) => {
