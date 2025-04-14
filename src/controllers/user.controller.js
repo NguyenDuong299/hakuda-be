@@ -12,9 +12,7 @@ const userController = {
     const newUser = { firstName, lastName, email, phone };
 
     User.create(newUser)
-      .then((result) =>
-        res.status(201).json({ id: result.insertId, ...newUser })
-      )
+      .then((result) => res.status(201).json({ id: result.insertId, ...newUser }))
       .catch((err) => res.status(500).json({ error: err.message }));
   },
 
@@ -23,7 +21,7 @@ const userController = {
     const updatedUser = req.body;
 
     User.update(id, updatedUser)
-      .then(() => res.json({ message: "User updated successfully" }))
+      .then(() => res.json({ message: "Chỉnh sửa người dùng thành công!" }))
       .catch((err) => res.status(500).json({ error: err.message }));
   },
 
@@ -31,7 +29,7 @@ const userController = {
     const { id } = req.params;
 
     User.delete(id)
-      .then(() => res.json({ message: "User deleted successfully" }))
+      .then(() => res.json({ message: "Đã xóa người dùng thành công!" }))
       .catch((err) => res.status(500).json({ error: err.message }));
   },
 };

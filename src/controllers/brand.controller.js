@@ -10,7 +10,7 @@ const brandController = {
   createBrand: (req, res) => {
     const { name, description, image } = req.body;
     if (!name) {
-      return res.status(400).json({ message: "Brand name is required" });
+      return res.status(400).json({ message: "Thương hiệu không được để trống" });
     }
     const newBrand = { name, description, image };
     Brand.create(newBrand)
