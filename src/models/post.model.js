@@ -9,7 +9,17 @@ const postModel = {
       });
     });
   },
-
+  getById: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query("SELECT * FROM posts WHERE id = ?", [id], (err, results) => {
+        if (err) return reject(err);
+        if (results.length === 0) {
+          return reject(new Error("Post not found"));
+        }
+        resolve(results[0]);
+      });
+    });
+  },
   createPost: (post) => {
     return new Promise((resolve, reject) => {
       connection.query("INSERT INTO posts SET ?", post, (err, results) => {
@@ -27,7 +37,7 @@ const postModel = {
     });
   },
 
-  delete: (id) => {
+  deletePost: (id) => {
     return new Promise((resolve, reject) => {
       connection.query("DELETE FROM posts WHERE id = ?", [id], (err, results) => {
         if (err) return reject(err);

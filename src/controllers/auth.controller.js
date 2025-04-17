@@ -68,9 +68,9 @@ const authController = {
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) return res.status(401).json({ message: "Sai thông tin tài khoản hoặc mật khẩu" });
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET_KEY, {
-        expiresIn: "1h",
+        expiresIn: "24h",
       });
-      res.json({ message: "Login successful", token });
+      res.json({ message: "Login successful", token, user });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

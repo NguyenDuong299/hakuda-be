@@ -5,8 +5,8 @@ const UserModel = {
     return new Promise((resolve, reject) => {
       connection.query("SELECT * FROM users", (err, results) => {
         if (err) reject(err);
-         results.map((user) => {
-          user.role = user.role === 1 ? "admin" : "user";
+        results.map((user) => {
+          user.role = user.role === "1" ? "admin" : "user";
           return user;
         });
         resolve(results);
