@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth.route");
 const productLineRoutes = require("./routes/productLine.route");
 const postRoutes = require("./routes/post.route");
 const bannerRoutes = require("./routes/banner.route");
+const voucherRoutes = require("./routes/voucher.route");
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -33,6 +34,7 @@ app.use("/public", express.static(path.join(__dirname, "public"))); // Serve sta
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/brands", brandRoutes);
+app.use("/api/vouchers", voucherRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/product_lines", productLineRoutes);
 app.use("/api/posts", postRoutes);

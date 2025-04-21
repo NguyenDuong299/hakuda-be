@@ -27,7 +27,14 @@ const postModel = {
       });
     });
   },
-
+  getAllPostHot: () => {
+    return new Promise((resolve, reject) => {
+      connection.query("SELECT * FROM posts WHERE hot = 1", (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  },
   getById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query("SELECT * FROM posts WHERE id = ?", [id], (err, results) => {

@@ -61,7 +61,7 @@ const authController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      const users = await User.getAll();
+      const users = await User.getAllAdmin();
       const user = users.find((u) => u.email === email);
       if (!user) return res.status(404).json({ message: "Không tìm thấy thông tin người dùng" });
 

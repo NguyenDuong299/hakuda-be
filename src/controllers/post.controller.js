@@ -17,6 +17,14 @@ const postController = {
       .catch((err) => res.status(500).send(err));
   },
 
+  getAllPostsHot: (req, res) => {
+    Post.getAllPostHot()
+      .then((posts) => {
+        res.json({ posts });
+      })
+      .catch((err) => res.status(500).send(err));
+  },
+
   createPost: (req, res) => {
     const { title, content, thumbnail, author, hot } = req.body;
     if (!title) {
@@ -27,6 +35,7 @@ const postController = {
       .then((result) => res.status(201).json({ id: result.insertId, ...newPost, message: "Thêm bài viết thành công!" }))
       .catch((err) => res.status(500).send(err));
   },
+
   getPostById: (req, res) => {
     const { id } = req.params;
     Post.getById(id)
@@ -40,6 +49,7 @@ const postController = {
         res.status(500).json({ error: err.message });
       });
   },
+
   updatePost: (req, res) => {
     const { id } = req.params;
     const data = req.body;
