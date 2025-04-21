@@ -27,7 +27,19 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      address: {
+      addressProvinceCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      addressDistrictCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      addressWardCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      addressDesc: {
         type: Sequelize.STRING,
         allowNull: true,
       },

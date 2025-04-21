@@ -8,8 +8,8 @@ const userController = {
   },
 
   createUser: (req, res) => {
-    const { firstName, lastName, email, phone } = req.body;
-    const newUser = { firstName, lastName, email, phone };
+    const { firstName, lastName, email, phoneNumber } = req.body;
+    const newUser = { firstName, lastName, email, phoneNumber };
 
     User.create(newUser)
       .then((result) => res.status(201).json({ id: result.insertId, ...newUser }))

@@ -1,7 +1,7 @@
 const connection = require("../config/db");
 
 const bannerModel = {
-  getAll: () => {
+  getAllBanner: () => {
     return new Promise((resolve, reject) => {
       connection.query("SELECT * FROM banners", (err, results) => {
         if (err) reject(err);
@@ -10,7 +10,7 @@ const bannerModel = {
     });
   },
 
-  create: (banner) => {
+  createBanner: (banner) => {
     return new Promise((resolve, reject) => {
       connection.query("INSERT INTO banners SET ?", banner, (err, results) => {
         if (err) reject(err);
@@ -18,7 +18,7 @@ const bannerModel = {
       });
     });
   },
-  update: (id, banner) => {
+  updateBanner: (id, banner) => {
     return new Promise((resolve, reject) => {
       connection.query("UPDATE banners SET ? WHERE id = ?", [banner, id], (err, results) => {
         if (err) return reject(err);
@@ -27,7 +27,7 @@ const bannerModel = {
     });
   },
 
-  delete: (id) => {
+  deleteBanner: (id) => {
     return new Promise((resolve, reject) => {
       connection.query("DELETE FROM banners WHERE id = ?", [id], (err, results) => {
         if (err) return reject(err);

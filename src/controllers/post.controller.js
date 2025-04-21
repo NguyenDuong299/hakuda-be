@@ -2,8 +2,18 @@ const Post = require("../models/post.model");
 
 const postController = {
   getAllPosts: (req, res) => {
-    Post.getAllPost()
-      .then((post) => res.json(post))
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || "";
+    Post.getTotalPosts(search)
+      .then((totalPosts) => {
+        Post.getAllPost(limit, offset, search)
+          .then((posts) => {
+            res.json({ page, totalPosts, posts });
+          })
+          .catch((err) => res.status(500).send(err));
+      })
       .catch((err) => res.status(500).send(err));
   },
 
@@ -14,7 +24,7 @@ const postController = {
     }
     const newPost = { title, content, thumbnail, author, hot };
     Post.createPost(newPost)
-      .then((result) => res.status(201).json({ id: result.insertId, ...newPost }))
+      .then((result) => res.status(201).json({ id: result.insertId, ...newPost, message: "Thêm bài viết thành công!" }))
       .catch((err) => res.status(500).send(err));
   },
   getPostById: (req, res) => {
@@ -35,14 +45,14 @@ const postController = {
     const data = req.body;
 
     Post.updatePost(id, data)
-      .then((result) => res.json({ message: "Tin tức đã được chỉnh sửa", post: data }))
+      .then((result) => res.json({ message: "Bài viết đã được chỉnh sửa", post: data }))
       .catch((err) => res.status(500).json({ error: err.message }));
   },
   deletePost: (req, res) => {
     const { id } = req.params;
 
-    Post.delete(id)
-      .then(() => res.json({ message: "Tin tức được xoá" }))
+    Post.deletePost(id)
+      .then(() => res.json({ message: "Bài viết đã được xoá!" }))
       .catch((err) => res.status(500).json({ error: err.message }));
   },
 };
