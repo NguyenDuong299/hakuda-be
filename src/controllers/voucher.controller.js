@@ -9,18 +9,31 @@ const voucherController = {
 
   createVoucher: async (req, res) => {
     const { code, discountType, discountValue, quantity, startDate, endDate } = req.body;
+
     if (code === "" || discountType === "" || discountValue === "" || quantity === "" || startDate === "" || endDate === "") {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
     }
+
+    if (new Date(startDate) >= new Date(endDate)) {
+      return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!" });
+    }
+
     const voucher = await Voucher.getAllVoucher(code);
     const existingVoucher = voucher.find((u) => u.code === code);
 
     if (existingVoucher) {
       return res.status(400).json({ message: "Mã voucher đã tồn tại!" });
     }
+
     const newVoucher = { code, discountType, discountValue, quantity, startDate, endDate };
     Voucher.createVoucher(newVoucher)
-      .then((result) => res.status(201).json({ id: result.insertId, ...newVoucher, message: "Thêm Voucher thành công!" }))
+      .then((result) =>
+        res.status(201).json({
+          id: result.insertId,
+          ...newVoucher,
+          message: "Thêm Voucher thành công!",
+        })
+      )
       .catch((err) => res.status(500).send(err));
   },
   updateVoucher: (req, res) => {
