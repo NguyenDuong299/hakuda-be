@@ -1,54 +1,91 @@
 const Voucher = require("../models/voucher.model");
 
 const voucherController = {
-  getAllVoucher: (req, res) => {
-    Voucher.getAllVoucher()
-      .then((vouchers) => res.json({ vouchers }))
-      .catch((err) => res.status(500).json({ error: err.message }));
+  getAllVoucher: async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+      const offset = (page - 1) * limit;
+      const search = req.query.search || "";
+
+      const totalVoucher = await Voucher.getTotalVoucher(search);
+      const vouchers = await Voucher.getAllVoucher(limit, offset, search);
+
+      res.json({ page, totalVoucher, vouchers });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   },
 
   createVoucher: async (req, res) => {
-    const { code, discountType, discountValue, quantity, startDate, endDate } = req.body;
+    try {
+      const { code, discountType, discountValue, quantity, startDate, endDate } = req.body;
 
-    if (code === "" || discountType === "" || discountValue === "" || quantity === "" || startDate === "" || endDate === "") {
-      return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
+      if (!code || !discountType || !discountValue || !quantity || !startDate || !endDate) {
+        return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
+      }
+
+      const now = new Date();
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (start < new Date(now.setHours(0, 0, 0, 0))) {
+        return res.status(400).json({ message: "Ngày bắt đầu không được ở trong quá khứ!" });
+      }
+
+      if (start >= end) {
+        return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!" });
+      }
+
+      const existingVouchers = await Voucher.getAllVoucher();
+      const isDuplicate = existingVouchers.some((v) => v.code === code);
+
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Mã voucher đã tồn tại!" });
+      }
+
+      const newVoucher = { code, discountType, discountValue, quantity, startDate, endDate };
+      const result = await Voucher.createVoucher(newVoucher);
+
+      res.status(201).json({
+        id: result.insertId,
+        ...newVoucher,
+        message: "Thêm Voucher thành công!",
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-
-    if (new Date(startDate) >= new Date(endDate)) {
-      return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!" });
-    }
-
-    const voucher = await Voucher.getAllVoucher(code);
-    const existingVoucher = voucher.find((u) => u.code === code);
-
-    if (existingVoucher) {
-      return res.status(400).json({ message: "Mã voucher đã tồn tại!" });
-    }
-
-    const newVoucher = { code, discountType, discountValue, quantity, startDate, endDate };
-    Voucher.createVoucher(newVoucher)
-      .then((result) =>
-        res.status(201).json({
-          id: result.insertId,
-          ...newVoucher,
-          message: "Thêm Voucher thành công!",
-        })
-      )
-      .catch((err) => res.status(500).send(err));
   },
-  updateVoucher: (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
 
-    Voucher.updateVoucher(id, data)
-      .then((result) => res.json({ message: "Chỉnh sửa Voucher thành công!" }))
-      .catch((err) => res.status(500).json({ error: err.message }));
+  updateVoucher: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+
+      const existingVouchers = await Voucher.getAllVoucher();
+      const isDuplicate = existingVouchers.some(
+        (v) => v.code === data.code && v.id !== parseInt(id)
+      );
+
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Mã voucher đã tồn tại!" });
+      }
+
+      await Voucher.updateVoucher(id, data);
+      res.json({ message: "Chỉnh sửa Voucher thành công!" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   },
-  deleteVoucher: (req, res) => {
-    const { id } = req.params;
-    Voucher.deleteVoucher(id)
-      .then(() => res.json({ message: "Xóa voucher thành công!" }))
-      .catch((err) => res.status(500).json({ error: err.message }));
+
+  deleteVoucher: async (req, res) => {
+    try {
+      const { id } = req.params;
+      await Voucher.deleteVoucher(id);
+      res.json({ message: "Xóa voucher thành công!" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   },
 };
 

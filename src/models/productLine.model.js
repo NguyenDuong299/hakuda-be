@@ -1,11 +1,11 @@
 const connection = require("../config/db");
 
-const brandModel = {
-  getAllBrand: (limit, offset, search = "") => {
+const productLineModel = {
+  getAllProductLine: (limit, offset, search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       const sql = `
-        SELECT * FROM brands 
+        SELECT * FROM product_lines 
         WHERE name LIKE ?
         LIMIT ? OFFSET ?
       `;
@@ -20,12 +20,12 @@ const brandModel = {
     });
   },
 
-  getTotalBrand: (search = "") => {
+  getTotalProductLine: (search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       const sql = `
         SELECT COUNT(*) AS total 
-        FROM brands 
+        FROM product_lines 
         WHERE name LIKE ?
       `;
 
@@ -36,38 +36,38 @@ const brandModel = {
     });
   },
 
-  createBrand: (brand) => {
-    const newBrand = {
-      ...brand,
+  createProductLine: (productLine) => {
+    const newProductLine = {
+      ...productLine,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     return new Promise((resolve, reject) => {
-      connection.query("INSERT INTO brands SET ?", newBrand, (err, results) => {
+      connection.query("INSERT INTO product_lines SET ?", newProductLine, (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });
     });
   },
 
-  updateBrand: (id, brand) => {
-    const newBrand = {
-      ...brand,
+  updateProductLine: (id, productLine) => {
+    const newProductLine = {
+      ...productLine,
       updatedAt: new Date(),
     };
 
     return new Promise((resolve, reject) => {
-      connection.query("UPDATE brands SET ? WHERE id = ?", [newBrand, id], (err, results) => {
+      connection.query("UPDATE product_lines SET ? WHERE id = ?", [newProductLine, id], (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });
     });
   },
 
-  deleteBrand: (id) => {
+  deleteProductLine: (id) => {
     return new Promise((resolve, reject) => {
-      connection.query("DELETE FROM brands WHERE id = ?", [id], (err, results) => {
+      connection.query("DELETE FROM product_lines WHERE id = ?", [id], (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });
@@ -75,4 +75,4 @@ const brandModel = {
   },
 };
 
-module.exports = brandModel;
+module.exports = productLineModel;

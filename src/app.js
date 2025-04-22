@@ -6,6 +6,7 @@ const multer = require("multer");
 
 const userRoutes = require("./routes/user.route");
 const brandRoutes = require("./routes/brand.route");
+const productRoutes = require("./routes/product.route");
 const authRoutes = require("./routes/auth.route");
 const productLineRoutes = require("./routes/productLine.route");
 const postRoutes = require("./routes/post.route");
@@ -33,10 +34,11 @@ app.use("/public", express.static(path.join(__dirname, "public"))); // Serve sta
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/banners", bannerRoutes);
-app.use("/api/product_lines", productLineRoutes);
+app.use("/api/product-lines", productLineRoutes);
 app.use("/api/posts", postRoutes);
 
 // Add the file upload route

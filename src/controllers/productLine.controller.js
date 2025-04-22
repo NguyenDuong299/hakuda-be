@@ -1,36 +1,76 @@
-const ProductLine = require("../models/product.line.model");
+const ProductLine = require("../models/productLine.model");
 
 const productLineController = {
-  getAllProductLines: (req, res) => {
-    ProductLine.getAll()
-      .then((productLine) => res.json(productLine))
-      .catch((err) => res.status(500).send(err));
-  },
+  getAllProductLine: async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+      const offset = (page - 1) * limit;
+      const search = req.query.search || "";
 
-  createProductLine: (req, res) => {
-    const { name, description } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: "Dòng sản phẩm không được để trống không được để trống" });
+      const totalProductLine = await ProductLine.getTotalProductLine(search);
+      const productLines = await ProductLine.getAllProductLine(limit, offset, search);
+
+      res.json({ page, totalProductLine, productLines });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-    const newProductLine = { name, description };
-    ProductLine.create(newProductLine)
-      .then((result) => res.status(201).json({ id: result.insertId, ...newProductLine }))
-      .catch((err) => res.status(500).send(err));
   },
-  updateProductLine: (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
 
-    ProductLine.update(id, data)
-      .then((result) => res.json({ message: "Đã cập nhật dòng sản phẩm" }))
-      .catch((err) => res.status(500).json({ error: err.message }));
+  createProductLine: async (req, res) => {
+    try {
+      const { name, description, image } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: "Vui lòng nhập tên dòng sản phẩm!" });
+      }
+
+      const existingProductLines = await ProductLine.getAllProductLine();
+      const isDuplicate = existingProductLines.some((v) => v.name === name);
+
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Tên dòng sản phẩm đã tồn tại!" });
+      }
+
+      const newProductLine = { name, description, image };
+      const result = await ProductLine.createProductLine(newProductLine);
+
+      res.status(201).json({
+        id: result.insertId,
+        ...newProductLine,
+        message: "Thêm dòng sản phẩm thành công!",
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   },
-  deleteProductLine: (req, res) => {
-    const { id } = req.params;
+  updateProductLine: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
 
-    ProductLine.delete(id)
-      .then(() => res.json({ message: "Đã xoá" }))
-      .catch((err) => res.status(500).json({ error: err.message }));
+      const existingProductLines = await ProductLine.getAllProductLine();
+      const isDuplicate = existingProductLines.some((v) => v.name === data.name && v.id !== parseInt(id));
+
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Tên dòng sản phẩm đã tồn tại!" });
+      }
+
+      await ProductLine.updateProductLine(id, data);
+      res.json({ message: "Chỉnh sửa dòng sản phẩm thành công!" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  deleteProductLine: async (req, res) => {
+    try {
+      const { id } = req.params;
+      await ProductLine.deleteProductLine(id);
+      res.json({ message: "Xóa dòng sản phẩm thành công!" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   },
 };
 
