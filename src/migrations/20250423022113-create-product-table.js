@@ -27,14 +27,24 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      thumbnail: {
-        type: Sequelize.STRING,
-        allowNull: true,
+      price: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: false,
       },
-      status: {
+      stock_quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      isDiscount: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true,
+      },
+      hot: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       brand_id: {
         type: Sequelize.INTEGER,
