@@ -1,37 +1,68 @@
 const connection = require("../config/db");
 
 const productModel = {
-  getAllProduct: (limit, offset, search = "") => {
+  getAllOrder: (limit, offset, search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       const sql = `
-      SELECT 
-  p.*, 
+       SELECT
+  o.*,
   JSON_ARRAYAGG(
-    CASE 
-      WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
-      THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+    CASE
+      WHEN oi.product_id IS NOT NULL AND oi.quantity IS NOT NULL AND oi.price IS NOT NULL
+      THEN JSON_OBJECT(
+        'product_id', oi.product_id,
+        'quantity', oi.quantity,
+        'price', oi.price,
+        'product_name', p.name,
+        'product_image', p.image,
+        'product_description', p.description
+      )
       ELSE NULL
     END
-  ) AS images
-FROM products p
-LEFT JOIN product_images pi ON p.id = pi.product_id
-WHERE p.name LIKE ? OR p.code LIKE ?
-GROUP BY p.id
+  ) AS order_items
+FROM orders o
+LEFT JOIN order_items oi ON o.id = oi.order_id
+LEFT JOIN products p ON oi.product_id = p.id
+WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
+GROUP BY o.id
 LIMIT ? OFFSET ?
-          `;
 
+     `;
+      //   SELECT
+      //     o.*,
+      //     JSON_ARRAYAGG(
+      //       IF(
+      //         oi.product_id IS NOT NULL,
+      //         JSON_OBJECT(
+      //           'product_id', oi.product_id,
+      //           'quantity', oi.quantity,
+      //           'price', oi.price
+      //         ),
+      //         NULL
+      //       )
+      //     ) AS order_items
+      //   FROM orders o
+      //   LEFT JOIN order_items oi ON o.id = oi.order_id
+      //   WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
+      //   GROUP BY o.id
+      //   LIMIT ? OFFSET ?
       limit = parseInt(limit) || 10;
       offset = parseInt(offset) || 0;
 
       connection.query(sql, [searchQuery, searchQuery, limit, offset], (err, results) => {
         if (err) return reject(err);
+
         results.forEach((item) => {
-          // Kiểm tra nếu mảng images chứa tất cả các phần tử NULL
-          if (!item.images || item.images.length === 0 || item.images.every((img) => img === null)) {
-            item.images = []; // Gán mảng rỗng nếu không có ảnh hợp lệ
+          try {
+            item.order_items = JSON.parse(item.order_items);
+            if (!Array.isArray(item.order_items)) item.order_items = [];
+            item.order_items = item.order_items.filter((i) => i !== null);
+          } catch {
+            item.order_items = [];
           }
         });
+
         resolve(results);
       });
     });

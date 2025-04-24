@@ -7,6 +7,7 @@ const multer = require("multer");
 const userRoutes = require("./routes/user.route");
 const brandRoutes = require("./routes/brand.route");
 const productRoutes = require("./routes/product.route");
+const orderRoutes = require("./routes/order.route");
 const authRoutes = require("./routes/auth.route");
 const productLineRoutes = require("./routes/productLine.route");
 const postRoutes = require("./routes/post.route");
@@ -35,6 +36,7 @@ app.use("/public", express.static(path.join(__dirname, "public"))); // Serve sta
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/banners", bannerRoutes);
