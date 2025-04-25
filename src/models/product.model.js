@@ -1,52 +1,26 @@
 const connection = require("../config/db");
 
 const productModel = {
-  getAllOrder: (limit, offset, search = "") => {
+  getAllProduct: (limit, offset, search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       const sql = `
-       SELECT
-  o.*,
-  JSON_ARRAYAGG(
-    CASE
-      WHEN oi.product_id IS NOT NULL AND oi.quantity IS NOT NULL AND oi.price IS NOT NULL
-      THEN JSON_OBJECT(
-        'product_id', oi.product_id,
-        'quantity', oi.quantity,
-        'price', oi.price,
-        'product_name', p.name,
-        'product_image', p.image,
-        'product_description', p.description
-      )
-      ELSE NULL
-    END
-  ) AS order_items
-FROM orders o
-LEFT JOIN order_items oi ON o.id = oi.order_id
-LEFT JOIN products p ON oi.product_id = p.id
-WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
-GROUP BY o.id
-LIMIT ? OFFSET ?
-
+      SELECT 
+   p.*, 
+   JSON_ARRAYAGG(
+     CASE 
+       WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+       THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+       ELSE NULL
+     END
+   ) AS images
+ FROM products p
+ LEFT JOIN product_images pi ON p.id = pi.product_id
+ WHERE p.name LIKE ? OR p.code LIKE ?
+ GROUP BY p.id
+ LIMIT ? OFFSET ?
      `;
-      //   SELECT
-      //     o.*,
-      //     JSON_ARRAYAGG(
-      //       IF(
-      //         oi.product_id IS NOT NULL,
-      //         JSON_OBJECT(
-      //           'product_id', oi.product_id,
-      //           'quantity', oi.quantity,
-      //           'price', oi.price
-      //         ),
-      //         NULL
-      //       )
-      //     ) AS order_items
-      //   FROM orders o
-      //   LEFT JOIN order_items oi ON o.id = oi.order_id
-      //   WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
-      //   GROUP BY o.id
-      //   LIMIT ? OFFSET ?
+     
       limit = parseInt(limit) || 10;
       offset = parseInt(offset) || 0;
 

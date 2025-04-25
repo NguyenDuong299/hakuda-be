@@ -6,7 +6,7 @@ const checkRole = require("../middlewares/checkRole.middleware");
 
 router.get("/", orderController.getAllOrder);
 router.post("/", orderController.createOrder);
-// router.put("/:id", productController.updateProduct);
-// router.delete("/:id", productController.deleteProduct);
+router.put("/:id", orderController.updateOrder);
+router.delete("/:id", orderController.deleteOrder);
 
 module.exports = router;

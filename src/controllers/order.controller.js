@@ -18,12 +18,13 @@ const orderController = {
   },
   createOrder: async (req, res) => {
     try {
-      const { recipient_name, recipient_phone, recipient_address, total_price, order_items } = req.body;
+      const { user_id, recipient_name, recipient_phone, recipient_address, total_price, order_items } = req.body;
 
       if (!recipient_name || !recipient_phone || !recipient_address || !total_price || !Array.isArray(order_items) || order_items.length === 0) {
         return res.status(400).json({ message: "Thiếu thông tin đơn hàng hoặc không có sản phẩm." });
       }
       const result = await Order.createOrder({
+        user_id,
         recipient_name,
         recipient_phone,
         recipient_address,
@@ -37,46 +38,24 @@ const orderController = {
     }
   },
 
-  updateProduct: async (req, res) => {
+  updateOrder: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description, detail, price, stock_quantity, isDiscount, hot, brand_id, product_line_id, images } = req.body;
-      const existingProduct = await Product.getAllProduct();
-      const isDuplicate = existingProduct.some((v) => v.name === name && v.id !== parseInt(id));
-      if (isDuplicate) {
-        return res.status(400).json({ message: "Sản phẩm đã tồn tại!" });
-      }
-      const productData = {
-        name,
-        description,
-        detail,
-        price,
-        stock_quantity,
-        isDiscount,
-        hot,
-        brand_id,
-        product_line_id,
-      };
-      await Product.updateProduct(id, productData);
-      if (images) {
-        await Product.deleteProductImages(id);
-        if (images.length > 0) {
-          const imageRows = images.map((url) => [id, url.image_url, url.isThumbnail]);
-          await Product.addProductImages(imageRows);
-        }
-      }
-
-      res.json({ message: "Chỉnh sửa sản phẩm thành công!" });
+      const { status } = req.body;
+      const result = await Order.updateOrder(id, {
+        status,
+      });
+      res.json(result);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   },
 
-  deleteProduct: async (req, res) => {
+  deleteOrder: async (req, res) => {
     try {
       const { id } = req.params;
-      await Product.deleteProduct(id);
-      res.json({ message: "Xóa sản phẩm thành công!" });
+      await Order.deleteOrder(id);
+      res.json({ message: "Xóa đơn hàng thành công!" });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

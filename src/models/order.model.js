@@ -61,21 +61,21 @@ LIMIT ? OFFSET ?
 
   createOrder: (orderData) => {
     return new Promise((resolve, reject) => {
-      const { recipient_name, recipient_phone, recipient_address, total_price, order_items = [] } = orderData;
+      const { user_id, recipient_name, recipient_phone, recipient_address, total_price, order_items = [] } = orderData;
 
       if (!order_items.length) {
         return reject(new Error("Order must contain at least one item."));
       }
 
       const insertOrderSql = `
-      INSERT INTO orders (recipient_name, recipient_phone, recipient_address, total_price)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO orders (user_id, recipient_name, recipient_phone, recipient_address, total_price)
+      VALUES (?, ?, ?, ?, ?)
     `;
 
       connection.beginTransaction((err) => {
         if (err) return reject(err);
 
-        connection.query(insertOrderSql, [recipient_name, recipient_phone, recipient_address, total_price], (err, result) => {
+        connection.query(insertOrderSql, [user_id, recipient_name, recipient_phone, recipient_address, total_price], (err, result) => {
           if (err) return connection.rollback(() => reject(err));
 
           const orderId = result.insertId;
@@ -96,44 +96,30 @@ LIMIT ? OFFSET ?
       });
     });
   },
-
-  updateProduct: (id, product) => {
-    const now = new Date();
-    const { images = [], ...productData } = product;
-
-    const newProduct = {
-      ...productData,
-      updatedAt: now,
+  updateOrder: (id, order) => {
+    const newOrder = {
+      ...order,
+      updatedAt: new Date(),
     };
 
     return new Promise((resolve, reject) => {
-      connection.query("UPDATE products SET ? WHERE id = ?", [newProduct, id], (err, result) => {
+      connection.query("UPDATE orders SET ? WHERE id = ?", [newOrder, id], (err, results) => {
         if (err) return reject(err);
-
-        connection.query("DELETE FROM product_images WHERE product_id = ?", [id], (err2) => {
-          if (err2) return reject(err2);
-
-          if (images.length === 0) return resolve({ id, ...productData, images: [] });
-
-          const imageRows = images.map((url) => [id, url]);
-          connection.query("INSERT INTO product_images (product_id, image_url) VALUES ?", [imageRows], (err3) => {
-            if (err3) return reject(err3);
-            resolve({ id, ...productData, images });
-          });
-        });
+        resolve(results);
       });
     });
   },
 
-  deleteProduct: (id) => {
+  deleteOrder: (id) => {
     return new Promise((resolve, reject) => {
-      connection.query("DELETE FROM product_images WHERE product_id = ?", [id], (err) => {
-        if (err) return reject(err);
+      const deleteOrderSql = `
+        DELETE FROM orders
+        WHERE id = ?
+      `;
 
-        connection.query("DELETE FROM products WHERE id = ?", [id], (err2, result) => {
-          if (err2) return reject(err2);
-          resolve(result);
-        });
+      connection.query(deleteOrderSql, [id], (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
       });
     });
   },
