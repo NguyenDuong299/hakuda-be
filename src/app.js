@@ -10,6 +10,7 @@ const productRoutes = require("./routes/product.route");
 const orderRoutes = require("./routes/order.route");
 const authRoutes = require("./routes/auth.route");
 const productLineRoutes = require("./routes/productLine.route");
+const exportReceiptRoutes = require("./routes/export-receipt.route");
 const postRoutes = require("./routes/post.route");
 const bannerRoutes = require("./routes/banner.route");
 const voucherRoutes = require("./routes/voucher.route");
@@ -41,6 +42,7 @@ app.use("/api/brands", brandRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/product-lines", productLineRoutes);
+app.use("/api/export-receipts", exportReceiptRoutes);
 app.use("/api/posts", postRoutes);
 
 // Add the file upload route
