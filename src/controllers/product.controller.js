@@ -44,7 +44,22 @@ const productController = {
       res.status(500).json({ error: err.message });
     }
   },
-
+  getNewProduct: async (req, res) => {
+    try {
+      const products = await Product.getNewProduct();
+      res.json({ products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getHotProduct: async (req, res) => {
+    try {
+      const products = await Product.getHotProduct();
+      res.json({ products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;

@@ -20,7 +20,7 @@ const productModel = {
  GROUP BY p.id
  LIMIT ? OFFSET ?
      `;
-     
+
       limit = parseInt(limit) || 10;
       offset = parseInt(offset) || 0;
 
@@ -93,6 +93,90 @@ const productModel = {
       });
     });
   },
+
+  getNewProduct: (limit, offset, search = "") => {
+    return new Promise((resolve, reject) => {
+      limit = parseInt(limit) || 10;
+      offset = parseInt(offset) || 0;
+
+      const searchQuery = `%${search}%`;
+
+      const sql = `
+        SELECT 
+          p.*, 
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+              THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+              ELSE NULL
+            END
+          ) AS images
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        ${search ? `WHERE p.name LIKE ?` : ""}
+        GROUP BY p.id
+        ORDER BY p.createdAt DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      const params = search ? [searchQuery, limit, offset] : [limit, offset];
+
+      connection.query(sql, params, (err, results) => {
+        if (err) return reject(err);
+
+        results.forEach((item) => {
+          try {
+            if (typeof item.images === "string") {
+              item.images = JSON.parse(item.images).filter((i) => i !== null);
+            }
+          } catch {
+            item.images = [];
+          }
+        });
+
+        resolve(results);
+      });
+    });
+  },
+  getHotProduct: () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          p.*, 
+          COALESCE(
+            JSON_ARRAYAGG(
+              JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+            ),
+            JSON_ARRAY()
+          ) AS images
+        FROM products p
+        LEFT JOIN product_images pi 
+          ON p.id = pi.product_id 
+          AND pi.image_url IS NOT NULL 
+          AND pi.isThumbnail IS NOT NULL
+        WHERE p.hot = 1
+        GROUP BY p.id
+        ORDER BY p.createdAt DESC
+      `;
+  
+      connection.query(sql, (err, results) => {
+        if (err) return reject(err);
+  
+        results.forEach((item) => {
+          try {
+            if (typeof item.images === "string") {
+              item.images = JSON.parse(item.images);
+            }
+          } catch {
+            item.images = [];
+          }
+        });
+  
+        resolve(results);
+      });
+    });
+  },
+  
 
   updateProduct: (id, product) => {
     const now = new Date();
