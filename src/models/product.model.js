@@ -18,6 +18,7 @@ const productModel = {
  LEFT JOIN product_images pi ON p.id = pi.product_id
  WHERE p.name LIKE ? OR p.code LIKE ?
  GROUP BY p.id
+ ORDER BY p.createdAt DESC
  LIMIT ? OFFSET ?
      `;
 
@@ -158,10 +159,10 @@ const productModel = {
         GROUP BY p.id
         ORDER BY p.createdAt DESC
       `;
-  
+
       connection.query(sql, (err, results) => {
         if (err) return reject(err);
-  
+
         results.forEach((item) => {
           try {
             if (typeof item.images === "string") {
@@ -171,12 +172,48 @@ const productModel = {
             item.images = [];
           }
         });
-  
+
         resolve(results);
       });
     });
   },
-  
+  getSugestProduct: () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+     SELECT 
+          p.*, 
+          COALESCE(
+            JSON_ARRAYAGG(
+              JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+            ),
+            JSON_ARRAY()
+          ) AS images
+        FROM products p
+        LEFT JOIN product_images pi 
+          ON p.id = pi.product_id 
+          AND pi.image_url IS NOT NULL 
+          AND pi.isThumbnail IS NOT NULL
+        GROUP BY p.id
+      ORDER BY RAND()
+      LIMIT 10
+    `;
+
+      connection.query(sql, (err, results) => {
+        if (err) return reject(err);
+
+        results.forEach((item) => {
+          try {
+            if (typeof item.images === "string") {
+              item.images = JSON.parse(item.images);
+            }
+          } catch {
+            item.images = [];
+          }
+        });
+        resolve(results);
+      });
+    });
+  },
 
   updateProduct: (id, product) => {
     const now = new Date();

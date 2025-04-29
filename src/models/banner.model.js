@@ -18,9 +18,14 @@ const bannerModel = {
       });
     });
   },
+
   updateBanner: (id, banner) => {
+    const newBanner = {
+      ...banner,
+      updated_at: new Date(),
+    };
     return new Promise((resolve, reject) => {
-      connection.query("UPDATE banners SET ? WHERE id = ?", [banner, id], (err, results) => {
+      connection.query("UPDATE banners SET ? WHERE id = ?", [newBanner, id], (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });
