@@ -60,10 +60,15 @@ const productModel = {
   },
   createProduct: (product) => {
     const now = new Date();
-    const { images = [], ...productData } = product;
+    const { images = [], stock_quantity, ...productData } = product;
+
+    if (!Number.isInteger(stock_quantity) || stock_quantity <= 0) {
+      return Promise.reject(new Error("Số lượng của sản phẩm phải lớn hơn 0!"));
+    }
 
     const newProduct = {
       ...productData,
+      stock_quantity,
       code: "TMP",
       createdAt: now,
       updatedAt: now,
@@ -80,7 +85,7 @@ const productModel = {
           if (err2) return reject(err2);
 
           if (!images.length) {
-            return resolve({ id: newId, ...productData, code: newCode, images: [] });
+            return resolve({ id: newId, ...productData, stock_quantity, code: newCode, images: [] });
           }
 
           const safeImages = Array.isArray(images) ? images : [];
@@ -88,7 +93,7 @@ const productModel = {
 
           connection.query("INSERT INTO product_images (product_id, image_url, isThumbnail) VALUES ?", [imageRows], (err3) => {
             if (err3) return reject(err3);
-            resolve({ id: newId, ...productData, code: newCode, images });
+            resolve({ id: newId, ...productData, stock_quantity, code: newCode, images });
           });
         });
       });
@@ -217,10 +222,14 @@ const productModel = {
 
   updateProduct: (id, product) => {
     const now = new Date();
-    const { images = [], ...productData } = product;
+    const { images = [], stock_quantity, ...productData } = product;
 
+    if (!Number.isInteger(stock_quantity) || stock_quantity <= 0) {
+      return Promise.reject(new Error("Số lượng của sản phẩm phải lớn hơn 0!"));
+    }
     const newProduct = {
       ...productData,
+      stock_quantity,
       updatedAt: now,
     };
 
@@ -231,12 +240,12 @@ const productModel = {
         connection.query("DELETE FROM product_images WHERE product_id = ?", [id], (err2) => {
           if (err2) return reject(err2);
 
-          if (images.length === 0) return resolve({ id, ...productData, images: [] });
+          if (images.length === 0) return resolve({ id, ...productData, stock_quantity, images: [] });
 
           const imageRows = images.map((url) => [id, url]);
           connection.query("INSERT INTO product_images (product_id, image_url) VALUES ?", [imageRows], (err3) => {
             if (err3) return reject(err3);
-            resolve({ id, ...productData, images });
+            resolve({ id, ...productData, stock_quantity, images });
           });
         });
       });
