@@ -28,16 +28,6 @@ const productModel = {
       connection.query(sql, [searchQuery, searchQuery, limit, offset], (err, results) => {
         if (err) return reject(err);
 
-        results.forEach((item) => {
-          try {
-            item.order_items = JSON.parse(item.order_items);
-            if (!Array.isArray(item.order_items)) item.order_items = [];
-            item.order_items = item.order_items.filter((i) => i !== null);
-          } catch {
-            item.order_items = [];
-          }
-        });
-
         resolve(results);
       });
     });
