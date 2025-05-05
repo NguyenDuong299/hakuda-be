@@ -5,6 +5,7 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const checkRole = require("../middlewares/checkRole.middleware");
 
 router.get("/", productController.getAllProducts);
+router.get("/:id", productController.getProductById);
 router.get("/filter/new", productController.getNewProduct);
 router.get("/filter/hot", productController.getHotProduct);
 router.get("/filter/suggest", productController.getSugestProduct);

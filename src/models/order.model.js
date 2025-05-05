@@ -58,24 +58,54 @@ LIMIT ? OFFSET ?
       });
     });
   },
+  getOrderById: (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT
+        o.*,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', oi.id,
+            'code', p.code,
+            'brand', b.name,
+            'product_line', pl.name,
+            'quantity', oi.quantity,
+            'price', oi.price,
+            'product_name', p.name
+          )
+        ) AS order_items
+      FROM orders o
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      LEFT JOIN product_lines pl ON p.product_line_id = pl.id
+      WHERE o.id = ?
+      GROUP BY o.id
+      `;
 
+      connection.query(sql, [id], (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  },
   createOrder: (orderData) => {
     return new Promise((resolve, reject) => {
-      const { user_id, recipient_name, recipient_phone, recipient_address, total_price, order_items = [] } = orderData;
+      const { user_id, recipient_name, recipient_phone, recipient_address, total_price, note, order_items = [] } = orderData;
 
       if (!order_items.length) {
         return reject(new Error("Order must contain at least one item."));
       }
 
       const insertOrderSql = `
-      INSERT INTO orders (user_id, recipient_name, recipient_phone, recipient_address, total_price)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO orders (user_id, recipient_name, recipient_phone, recipient_address, total_price, note)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
       connection.beginTransaction((err) => {
         if (err) return reject(err);
 
-        connection.query(insertOrderSql, [user_id, recipient_name, recipient_phone, recipient_address, total_price], (err, result) => {
+        connection.query(insertOrderSql, [user_id, recipient_name, recipient_phone, recipient_address, total_price, note], (err, result) => {
           if (err) return connection.rollback(() => reject(err));
 
           const orderId = result.insertId;

@@ -60,6 +60,17 @@ const productController = {
       res.status(500).json({ error: err.message });
     }
   },
+
+  getProductById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.getProductById(id);
+      res.json({ product });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   getSugestProduct: async (req, res) => {
     try {
       const products = await Product.getSugestProduct();

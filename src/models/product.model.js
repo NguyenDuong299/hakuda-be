@@ -90,6 +90,30 @@ const productModel = {
     });
   },
 
+  getProductById: (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+      SELECT 
+        p.*, 
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'image_url', pi.image_url, 
+            'isThumbnail', pi.isThumbnail
+          )
+        ) AS images
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id
+      WHERE p.id = ?
+      GROUP BY p.id
+    `;
+
+      connection.query(sql, [id], (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0]); // Trả về một object thay vì array
+      });
+    });
+  },
+
   getNewProduct: (limit, offset, search = "") => {
     return new Promise((resolve, reject) => {
       limit = parseInt(limit) || 10;
