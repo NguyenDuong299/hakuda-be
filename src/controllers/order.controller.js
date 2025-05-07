@@ -51,32 +51,39 @@ const orderController = {
       if (!existingOrder) {
         return res.status(404).json({ message: "Đơn hàng không tồn tại." });
       }
-
       const result = await Order.updateOrder(id, { status });
       if (status === "confirmed" && existingOrder.status !== "confirmed") {
-        const orderItems = await Order.getOrderById(id); // bạn cần có hàm này
-        const export_receipt_details = orderItems.map((item) => ({
-          id: item.id,
-          user_id: item.user_id,
-          voucher_id: item.voucher_id,
-          total_price: item.total_price,
-          shipping_address: item.shipping_address,
-          recipient_name: item.recipient_name,
-          recipient_phone: item.recipient_phone,
-          order_items: item.order_items,
+        const export_receipt_details = existingOrder.order_items.map((item) => ({
+          export_receipt_id: existingOrder.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          export_price: item.price,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }));
 
-        await ExportReceipt.createExportReceipt({
-          order_id: id,
+        const result = await ExportReceipt.createExportReceipt({
+          order_id: existingOrder.id,
           export_date: new Date(),
           total_amount: existingOrder.total_price,
           user_id,
           status: "pending",
           export_receipt_details,
         });
+        res.json({ result, message: "Chỉnh sửa đơn hàng và tạo biên lai thành công!" });
       }
 
-      res.json(result);
+      res.json({ result, message: "Chỉnh sửa đơn hàng thành công!" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getOrderById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const order = await Order.getOrderById(id);
+      res.json(order);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

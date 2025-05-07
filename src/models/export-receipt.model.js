@@ -98,6 +98,46 @@ const exportReceiptModel = {
       });
     });
   },
+  getExportReceiptById: (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          p.id,
+          p.order_id,
+          p.export_date,
+          p.total_amount,
+          p.user_id,
+          p.status,
+          p.createdAt,
+          p.updatedAt,
+          JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', pi.id,
+                'product_id', pi.product_id,
+                'quantity', pi.quantity,
+                'export_price', pi.export_price,
+                'createdAt', pi.createdAt,
+                'updatedAt', pi.updatedAt
+              )
+          ) AS export_receipt_details
+        FROM export_receipts p
+        LEFT JOIN export_receipt_details pi ON p.id = pi.export_receipt_id
+        WHERE p.id = ?
+        GROUP BY p.id
+      `;
+
+      connection.query(sql, [id], (err, results) => {
+        if (err) return reject(err);
+        results.forEach((item) => {
+          if (!item.export_receipt_details || item.export_receipt_details.length === 0 || item.export_receipt_details.every((item) => item === null)) {
+            item.export_receipt_details = [];
+          }
+        });
+
+        resolve(results);
+      });
+    });
+  },
   updateExportReceipt: (id, exportReceipt) => {
     const newExportReceipt = {
       ...exportReceipt,

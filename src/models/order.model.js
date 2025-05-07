@@ -85,7 +85,11 @@ LIMIT ? OFFSET ?
 
       connection.query(sql, [id], (err, results) => {
         if (err) return reject(err);
-        resolve(results);
+        if (results.length > 0) {
+          resolve(results[0]); // Trả về phần tử đầu tiên thay vì cả mảng
+        } else {
+          resolve(null); // Trường hợp không tìm thấy đơn hàng
+        }
       });
     });
   },
