@@ -7,9 +7,11 @@ const productController = {
       const limit = 10;
       const offset = (page - 1) * limit;
       const search = req.query.search || "";
+      const brandId = req.query.brandId || "";
+      const productLineId = req.query.productLineId || "";
 
-      const totalProduct = await Product.getTotalProduct(search);
-      const products = await Product.getAllProduct(limit, offset, search);
+      const totalProduct = await Product.getTotalProduct(search, brandId, productLineId);
+      const products = await Product.getAllProduct(limit, offset, search, brandId, productLineId);
 
       res.json({ page, totalProduct, products });
     } catch (err) {
@@ -18,9 +20,9 @@ const productController = {
   },
   createProduct: async (req, res) => {
     try {
-      const { name, description, detail, price, stock_quantity, isDiscount, hot, brand_id, product_line_id, images } = req.body;
+      const { name, description, detail, price, stock_quantity = 0, isDiscount, hot, brand_id, product_line_id, images } = req.body;
 
-      if (!name || !price || !stock_quantity) {
+      if (!name || !price) {
         return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
       }
 
@@ -82,7 +84,7 @@ const productController = {
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description, detail, price, stock_quantity, isDiscount, hot, brand_id, product_line_id, images } = req.body;
+      const { name, description, detail, price, isDiscount, hot, brand_id, product_line_id, images } = req.body;
       const existingProduct = await Product.getAllProduct();
       const isDuplicate = existingProduct.some((v) => v.name === name && v.id !== parseInt(id));
       if (isDuplicate) {
@@ -93,7 +95,6 @@ const productController = {
         description,
         detail,
         price,
-        stock_quantity,
         isDiscount,
         hot,
         brand_id,

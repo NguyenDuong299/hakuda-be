@@ -125,19 +125,29 @@ const exportReceiptModel = {
         WHERE p.id = ?
         GROUP BY p.id
       `;
-
       connection.query(sql, [id], (err, results) => {
         if (err) return reject(err);
-        results.forEach((item) => {
-          if (!item.export_receipt_details || item.export_receipt_details.length === 0 || item.export_receipt_details.every((item) => item === null)) {
+        if (results.length === 0) return resolve(null); // Không tìm thấy
+
+        const item = results[0];
+
+        if (typeof item.export_receipt_details === "string") {
+          try {
+            item.export_receipt_details = JSON.parse(item.export_receipt_details);
+          } catch (e) {
             item.export_receipt_details = [];
           }
-        });
+        }
 
-        resolve(results);
+        if (!item.export_receipt_details || item.export_receipt_details.every((d) => d === null)) {
+          item.export_receipt_details = [];
+        }
+
+        resolve(item);
       });
     });
   },
+
   updateExportReceipt: (id, exportReceipt) => {
     const newExportReceipt = {
       ...exportReceipt,

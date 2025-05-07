@@ -15,7 +15,8 @@ const orderModel = {
       'product_line', pl.name,
       'quantity', oi.quantity,
       'price', oi.price,
-      'product_name', p.name
+      'product_name', p.name,
+      'product_id', p.id
     )
   ) AS order_items
 FROM orders o
@@ -71,7 +72,8 @@ LIMIT ? OFFSET ?
             'product_line', pl.name,
             'quantity', oi.quantity,
             'price', oi.price,
-            'product_name', p.name
+            'product_name', p.name,
+            'product_id', p.id
           )
         ) AS order_items
       FROM orders o

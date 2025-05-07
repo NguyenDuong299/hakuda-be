@@ -1,60 +1,84 @@
 const connection = require("../config/db");
 
 const productModel = {
-  getAllProduct: (limit, offset, search = "") => {
+  getAllProduct: (limit, offset, search = "", brandId = "", productLineId = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
-      const sql = `
-      SELECT 
-   p.*, 
-   JSON_ARRAYAGG(
-     CASE 
-       WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
-       THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
-       ELSE NULL
-     END
-   ) AS images
- FROM products p
- LEFT JOIN product_images pi ON p.id = pi.product_id
- WHERE p.name LIKE ? OR p.code LIKE ?
- GROUP BY p.id
- ORDER BY p.createdAt DESC
- LIMIT ? OFFSET ?
-     `;
-
       limit = parseInt(limit) || 10;
       offset = parseInt(offset) || 0;
 
-      connection.query(sql, [searchQuery, searchQuery, limit, offset], (err, results) => {
-        if (err) return reject(err);
+      let conditions = `(p.name LIKE ? OR p.code LIKE ?)`;
+      const values = [searchQuery, searchQuery];
 
+      if (brandId) {
+        conditions += " AND p.brand_id = ?";
+        values.push(brandId);
+      }
+
+      if (productLineId) {
+        conditions += " AND p.product_line_id = ?";
+        values.push(productLineId);
+      }
+
+      const sql = `
+        SELECT 
+          p.*, 
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+              THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+              ELSE NULL
+            END
+          ) AS images
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        WHERE ${conditions}
+        GROUP BY p.id
+        ORDER BY p.createdAt DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      values.push(limit, offset);
+
+      connection.query(sql, values, (err, results) => {
+        if (err) return reject(err);
         resolve(results);
       });
     });
   },
 
-  getTotalProduct: (search = "") => {
+  getTotalProduct: (search = "", brandId = "", productLineId = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
+      let conditions = `(name LIKE ? OR code LIKE ?)`;
+      const values = [searchQuery, searchQuery];
+  
+      if (brandId) {
+        conditions += " AND brand_id = ?";
+        values.push(brandId);
+      }
+  
+      if (productLineId) {
+        conditions += " AND product_line_id = ?";
+        values.push(productLineId);
+      }
+  
       const sql = `
-            SELECT COUNT(*) AS total 
-            FROM products 
-            WHERE name LIKE ? OR code LIKE ?
-          `;
-
-      connection.query(sql, [searchQuery, searchQuery], (err, results) => {
+        SELECT COUNT(*) AS total 
+        FROM products 
+        WHERE ${conditions}
+      `;
+  
+      connection.query(sql, values, (err, results) => {
         if (err) return reject(err);
         resolve(results[0].total);
       });
     });
   },
+  
   createProduct: (product) => {
     const now = new Date();
     const { images = [], stock_quantity, ...productData } = product;
-
-    if (!Number.isInteger(stock_quantity) || stock_quantity <= 0) {
-      return Promise.reject(new Error("Số lượng của sản phẩm phải lớn hơn 0!"));
-    }
 
     const newProduct = {
       ...productData,
@@ -236,14 +260,9 @@ const productModel = {
 
   updateProduct: (id, product) => {
     const now = new Date();
-    const { images = [], stock_quantity, ...productData } = product;
-
-    if (!Number.isInteger(stock_quantity) || stock_quantity <= 0) {
-      return Promise.reject(new Error("Số lượng của sản phẩm phải lớn hơn 0!"));
-    }
+    const { images = [], ...productData } = product;
     const newProduct = {
       ...productData,
-      stock_quantity,
       updatedAt: now,
     };
 
@@ -254,18 +273,29 @@ const productModel = {
         connection.query("DELETE FROM product_images WHERE product_id = ?", [id], (err2) => {
           if (err2) return reject(err2);
 
-          if (images.length === 0) return resolve({ id, ...productData, stock_quantity, images: [] });
+          if (images.length === 0) return resolve({ id, ...productData, images: [] });
 
           const imageRows = images.map((url) => [id, url]);
           connection.query("INSERT INTO product_images (product_id, image_url) VALUES ?", [imageRows], (err3) => {
             if (err3) return reject(err3);
-            resolve({ id, ...productData, stock_quantity, images });
+            resolve({ id, ...productData, images });
           });
         });
       });
     });
   },
-
+  decrementQuantity: (productId, quantity) => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ? AND stock_quantity >= ?`;
+      connection.query(sql, [quantity, productId, quantity], (err, result) => {
+        if (err) return reject(err);
+        if (result.affectedRows === 0) {
+          return reject(new Error("Sản phẩm không đủ số lượng để xuất kho."));
+        }
+        resolve(result);
+      });
+    });
+  },
   deleteProduct: (id) => {
     return new Promise((resolve, reject) => {
       connection.query("DELETE FROM product_images WHERE product_id = ?", [id], (err) => {

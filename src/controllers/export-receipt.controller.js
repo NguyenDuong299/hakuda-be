@@ -1,4 +1,5 @@
 const ExportReceipt = require("../models/export-receipt.model");
+const Product = require("../models/product.model");
 
 const exportReceiptController = {
   getAllExportReceipt: async (req, res) => {
@@ -49,12 +50,34 @@ const exportReceiptController = {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const result = await ExportReceipt.updateExportReceipt(id, {
-        status,
-      });
-      res.json({ message: "Chỉnh sửa biên lai thành công!", result });
+
+      const result = await ExportReceipt.updateExportReceipt(id, { status });
+
+      if (status === "completed") {
+        const details = await ExportReceipt.getExportReceiptById(id);
+        const exportDetails = details.export_receipt_details;
+
+        for (const item of exportDetails) {
+          await Product.decrementQuantity(item.product_id, item.quantity);
+        }
+      }
+
+      if (result) {
+        res.json({ message: "Cập nhật biên lai thành công!" });
+      }
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi cập nhật biên lai.", error: err.message });
+      console.error(err);
+      res.status(400).json({ message: "Cập nhật thất bại", error: err.message });
+    }
+  },
+
+  getExportReceiptById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const exportReceipt = await ExportReceipt.getExportReceiptById(id);
+      res.json(exportReceipt);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
   },
   deleteExportReceipt: async (req, res) => {
