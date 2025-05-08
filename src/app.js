@@ -11,10 +11,11 @@ const orderRoutes = require("./routes/order.route");
 const authRoutes = require("./routes/auth.route");
 const productLineRoutes = require("./routes/productLine.route");
 const exportReceiptRoutes = require("./routes/export-receipt.route");
+const importReceiptRoutes = require("./routes/import-receipt.route");
 const postRoutes = require("./routes/post.route");
 const bannerRoutes = require("./routes/banner.route");
 const voucherRoutes = require("./routes/voucher.route");
-const supplierRoutes = require('./routes/supplier.route');
+const supplierRoutes = require("./routes/supplier.route");
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -43,8 +44,9 @@ app.use("/api/vouchers", voucherRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/product-lines", productLineRoutes);
 app.use("/api/export-receipts", exportReceiptRoutes);
+app.use("/api/import-receipts", importReceiptRoutes);
 app.use("/api/posts", postRoutes);
-app.use('/api/suppliers', supplierRoutes);
+app.use("/api/suppliers", supplierRoutes);
 // Add the file upload route
 app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) {

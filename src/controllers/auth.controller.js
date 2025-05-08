@@ -61,6 +61,23 @@ const authController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
+      const users = await User.getAllUsers();
+      const user = users.find((u) => u.email === email);
+      if (!user) return res.status(404).json({ message: "Không tìm thấy thông tin người dùng" });
+
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) return res.status(401).json({ message: "Sai thông tin tài khoản hoặc mật khẩu" });
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET_KEY, {
+        expiresIn: "24h",
+      });
+      res.json({ message: "Login successful", token, user });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  loginAdmin: async (req, res) => {
+    try {
+      const { email, password } = req.body;
       const users = await User.getAllAdmin();
       const user = users.find((u) => u.email === email);
       if (!user) return res.status(404).json({ message: "Không tìm thấy thông tin người dùng" });
@@ -75,7 +92,6 @@ const authController = {
       res.status(500).json({ error: err.message });
     }
   },
-
   logout: (req, res) => {
     res.json({
       message: "Logged out successfully (client should discard token)",

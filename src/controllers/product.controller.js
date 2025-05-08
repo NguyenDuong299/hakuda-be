@@ -9,15 +9,17 @@ const productController = {
       const search = req.query.search || "";
       const brandId = req.query.brandId || "";
       const productLineId = req.query.productLineId || "";
-
-      const totalProduct = await Product.getTotalProduct(search, brandId, productLineId);
-      const products = await Product.getAllProduct(limit, offset, search, brandId, productLineId);
-
+      const minPrice = req.query.minPrice || null;
+      const maxPrice = req.query.maxPrice || null;
+      const orderBy = req.query.sortBy || "default";
+      const totalProduct = await Product.getTotalProduct(search, brandId, productLineId, minPrice, maxPrice);
+      const products = await Product.getAllProduct(limit, offset, search, brandId, productLineId, minPrice, maxPrice, orderBy);
       res.json({ page, totalProduct, products });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   },
+
   createProduct: async (req, res) => {
     try {
       const { name, description, detail, price, stock_quantity = 0, isDiscount, hot, brand_id, product_line_id, images } = req.body;

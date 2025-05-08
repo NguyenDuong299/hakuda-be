@@ -16,6 +16,16 @@ const exportReceiptController = {
       res.status(500).json({ error: err.message });
     }
   },
+  getTotalRevenue: async (req, res) => {
+    try {
+      const totalRevenue = await ExportReceipt.getTotalRevenue();
+      console.log("Total Revenue:", totalRevenue); // Log kết quả trả về
+      res.json({ totalRevenue });
+    } catch (err) {
+      console.error("Error:", err); // Log lỗi chi tiết
+      res.status(500).json({ error: err.message });
+    }
+  },
   getExportReceiptById: async (req, res) => {
     try {
       const { id } = req.params;

@@ -174,6 +174,21 @@ const exportReceiptModel = {
       });
     });
   },
+
+  getTotalRevenue: () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+      SELECT SUM(total_amount) AS revenue
+      FROM export_receipts
+      WHERE status = 'completed'
+    `;
+
+      connection.query(sql, (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0].revenue || 0);
+      });
+    });
+  },
 };
 
 module.exports = exportReceiptModel;

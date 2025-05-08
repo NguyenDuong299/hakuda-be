@@ -13,19 +13,28 @@ const UserModel = {
       });
     });
   },
-  getAllUsers: (limit, offset, search = "") => {
+  getAllUsers: (limit = null, offset = null, search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
-      const sql = `SELECT * FROM users 
+
+      let sql = `SELECT * FROM users 
       WHERE (firstName LIKE ? OR lastName LIKE ? OR email LIKE ? OR phoneNumber LIKE ?)
-      AND role != 1
-      LIMIT ? OFFSET ?`;
-      connection.query(sql, [searchQuery, searchQuery, searchQuery, searchQuery, limit, offset], (err, results) => {
-        if (err) reject(err);
-        results.map((user) => {
-          user.role = user.role === "1" ? "admin" : "user";
-        });
-        resolve(results);
+      AND role != 1`;
+      const params = [searchQuery, searchQuery, searchQuery, searchQuery];
+
+      if (Number.isInteger(limit) && Number.isInteger(offset)) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+      }
+
+      connection.query(sql, params, (err, results) => {
+        if (err) return reject(err);
+        if (!results) return resolve([]);
+        const users = results.map((user) => ({
+          ...user,
+          role: user.role === "1" ? "admin" : "user",
+        }));
+        resolve(users);
       });
     });
   },

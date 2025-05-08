@@ -4,6 +4,7 @@ const exportReceiptController = require("../controllers/export-receipt.controlle
 
 router.get("/", exportReceiptController.getAllExportReceipt);
 router.get("/:id", exportReceiptController.getExportReceiptById);
+router.get("/get/revenue", exportReceiptController.getTotalRevenue);
 router.post("/", exportReceiptController.createExportReceipt);
 router.put("/:id", exportReceiptController.updateExportReceipt);
 router.delete("/:id", exportReceiptController.deleteExportReceipt);

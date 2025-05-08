@@ -1,7 +1,7 @@
 const connection = require("../config/db");
 
 const productModel = {
-  getAllProduct: (limit, offset, search = "", brandId = "", productLineId = "") => {
+  getAllProduct: (limit, offset, search = "", brandId = "", productLineId = "", minPrice = null, maxPrice = null, sortBy) => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       limit = parseInt(limit) || 10;
@@ -9,7 +9,28 @@ const productModel = {
 
       let conditions = `(p.name LIKE ? OR p.code LIKE ?)`;
       const values = [searchQuery, searchQuery];
+      let orderClause = "ORDER BY p.createdAt DESC"; // mặc định
 
+      switch (sortBy) {
+        case "nameAsc":
+          orderClause = "ORDER BY p.name ASC";
+          break;
+        case "nameDesc":
+          orderClause = "ORDER BY p.name DESC";
+          break;
+        case "priceAsc":
+          orderClause = "ORDER BY p.price ASC";
+          break;
+        case "priceDesc":
+          orderClause = "ORDER BY p.price DESC";
+          break;
+        case "newest":
+          orderClause = "ORDER BY p.createdAt DESC";
+          break;
+        case "oldest":
+          orderClause = "ORDER BY p.createdAt ASC";
+          break;
+      }
       if (brandId) {
         conditions += " AND p.brand_id = ?";
         values.push(brandId);
@@ -20,23 +41,33 @@ const productModel = {
         values.push(productLineId);
       }
 
+      if (minPrice !== null) {
+        conditions += " AND p.price >= ?";
+        values.push(minPrice);
+      }
+
+      if (maxPrice !== null) {
+        conditions += " AND p.price <= ?";
+        values.push(maxPrice);
+      }
+
       const sql = `
-        SELECT 
-          p.*, 
-          JSON_ARRAYAGG(
-            CASE 
-              WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
-              THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
-              ELSE NULL
-            END
-          ) AS images
-        FROM products p
-        LEFT JOIN product_images pi ON p.id = pi.product_id
-        WHERE ${conditions}
-        GROUP BY p.id
-        ORDER BY p.createdAt DESC
-        LIMIT ? OFFSET ?
-      `;
+      SELECT 
+        p.*, 
+        JSON_ARRAYAGG(
+          CASE 
+            WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+            THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+            ELSE NULL
+          END
+        ) AS images
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id
+      WHERE ${conditions}
+      GROUP BY p.id
+       ${orderClause}
+      LIMIT ? OFFSET ?
+    `;
 
       values.push(limit, offset);
 
@@ -46,36 +77,35 @@ const productModel = {
       });
     });
   },
-
   getTotalProduct: (search = "", brandId = "", productLineId = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       let conditions = `(name LIKE ? OR code LIKE ?)`;
       const values = [searchQuery, searchQuery];
-  
+
       if (brandId) {
         conditions += " AND brand_id = ?";
         values.push(brandId);
       }
-  
+
       if (productLineId) {
         conditions += " AND product_line_id = ?";
         values.push(productLineId);
       }
-  
+
       const sql = `
         SELECT COUNT(*) AS total 
         FROM products 
         WHERE ${conditions}
       `;
-  
+
       connection.query(sql, values, (err, results) => {
         if (err) return reject(err);
         resolve(results[0].total);
       });
     });
   },
-  
+
   createProduct: (product) => {
     const now = new Date();
     const { images = [], stock_quantity, ...productData } = product;
@@ -281,6 +311,16 @@ const productModel = {
             resolve({ id, ...productData, images });
           });
         });
+      });
+    });
+  },
+  updateStockQuantity: (productId, newQuantity) => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE products SET stock_quantity = ?, updatedAt = ? WHERE id = ?`;
+      const now = new Date();
+      connection.query(sql, [newQuantity, now, productId], (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
       });
     });
   },
