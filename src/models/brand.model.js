@@ -7,6 +7,7 @@ const brandModel = {
       const sql = `
         SELECT * FROM brands 
         WHERE name LIKE ?
+        ORDER BY createdAt DESC
         LIMIT ? OFFSET ?
       `;
 

@@ -92,6 +92,28 @@ const authController = {
       res.status(500).json({ error: err.message });
     }
   },
+  changePassword: async (req, res) => {
+    try {
+      const { oldPassword, newPassword, confirmPassword } = req.body;
+      const userId = req.user.id;
+      const user = await User.getById(userId);
+      console.log(req.user.id);
+      if (!user) return res.status(404).json({ message: "Không tìm thấy thông tin người dùng" });
+
+      const validPassword = await bcrypt.compare(oldPassword, user.password);
+      if (!validPassword) return res.status(401).json({ message: "Sai thông tin tài khoản hoặc mật khẻu" });
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "Mật khẩu xác nhận không khớp" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await User.changePassword(userId, hashedPassword);
+      res.json({ message: "Đổi mật khẩu thành công" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
   logout: (req, res) => {
     res.json({
       message: "Logged out successfully (client should discard token)",
@@ -99,6 +121,7 @@ const authController = {
   },
   getMyProfile: (req, res) => {
     const userId = req.user.id;
+    console.log(userId);
     User.getById(userId)
       .then((user) => {
         const userProfile = user;

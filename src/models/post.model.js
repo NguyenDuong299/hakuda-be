@@ -5,7 +5,7 @@ const postModel = {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
 
-      const sql = "SELECT * FROM posts WHERE title LIKE ? LIMIT ? OFFSET ?";
+      const sql = "SELECT * FROM posts WHERE title LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
       connection.query(sql, [searchQuery, limit, offset], (err, results) => {
         if (err) return reject(err);
         results.map((post) => {

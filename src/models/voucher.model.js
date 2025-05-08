@@ -7,6 +7,7 @@ const voucherModel = {
       const sql = `
         SELECT * FROM vouchers 
         WHERE code LIKE ? OR discountType LIKE ? 
+        ORDER BY createdAt DESC
         LIMIT ? OFFSET ?
       `;
 
@@ -32,6 +33,32 @@ const voucherModel = {
       connection.query(sql, [searchQuery, searchQuery], (err, results) => {
         if (err) return reject(err);
         resolve(results[0].total);
+      });
+    });
+  },
+
+  checkVoucher: (code) => {
+    return new Promise((resolve, reject) => {
+      if (!code || code.trim() === "") {
+        return reject(new Error("Vui lòng nhập mã voucher."));
+      }
+
+      const now = new Date();
+      const sql = `
+        SELECT * FROM vouchers 
+        WHERE code = ? 
+          AND quantity > 0 
+          AND endDate >= ?
+      `;
+
+      connection.query(sql, [code, now], (err, results) => {
+        if (err) return reject(err);
+
+        if (results.length === 0) {
+          return reject(new Error("Voucher không hợp lệ hoặc đã hết hạn / hết số lượng"));
+        }
+
+        resolve(results[0]);
       });
     });
   },

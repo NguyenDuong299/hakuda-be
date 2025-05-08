@@ -57,15 +57,23 @@ const voucherController = {
     }
   },
 
+  checkVoucher: async (req, res) => {
+    try {
+      const { code } = req.params;
+      const result = await Voucher.checkVoucher(code);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   updateVoucher: async (req, res) => {
     try {
       const { id } = req.params;
       const data = req.body;
 
       const existingVouchers = await Voucher.getAllVoucher();
-      const isDuplicate = existingVouchers.some(
-        (v) => v.code === data.code && v.id !== parseInt(id)
-      );
+      const isDuplicate = existingVouchers.some((v) => v.code === data.code && v.id !== parseInt(id));
 
       if (isDuplicate) {
         return res.status(400).json({ message: "Mã voucher đã tồn tại!" });

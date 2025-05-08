@@ -28,6 +28,10 @@ const productController = {
         return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
       }
 
+      if (price > 99999999) {
+        return res.status(400).json({ message: "Giá quá lớn!" });
+      }
+
       const existingProduct = await Product.getAllProduct();
       const isDuplicate = existingProduct.some((v) => v.name === name);
 
@@ -78,6 +82,23 @@ const productController = {
   getSugestProduct: async (req, res) => {
     try {
       const products = await Product.getSugestProduct();
+      res.json({ products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getBestSellerProduct: async (req, res) => {
+    try {
+      const products = await Product.getBestSellerProduct();
+      res.json({ products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getRelatedProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const products = await Product.getRelatedProduct(id);
       res.json({ products });
     } catch (err) {
       res.status(500).json({ error: err.message });

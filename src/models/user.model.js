@@ -106,7 +106,14 @@ const UserModel = {
       });
     });
   },
-
+  changePassword: (id, password) => {
+    return new Promise((resolve, reject) => {
+      connection.query("UPDATE users SET password = ? WHERE id = ? LIMIT 1", [password, id], (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  },
   delete: (id) => {
     return new Promise((resolve, reject) => {
       connection.query("SELECT role FROM users WHERE id = ?", [id], (err, results) => {

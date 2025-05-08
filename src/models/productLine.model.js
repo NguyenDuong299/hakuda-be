@@ -7,6 +7,7 @@ const productLineModel = {
       const sql = `
         SELECT * FROM product_lines 
         WHERE name LIKE ?
+        ORDER BY createdAt DESC
         LIMIT ? OFFSET ?
       `;
 

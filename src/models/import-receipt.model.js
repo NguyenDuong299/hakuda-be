@@ -11,6 +11,7 @@ const importReceiptModel = {
       SELECT 
         p.id,
         p.supplier_id,
+        s.name AS supplier_name,
         p.import_date,
         p.total_amount,
         p.note,
@@ -27,6 +28,7 @@ const importReceiptModel = {
             )
         ) AS import_receipt_details
       FROM import_receipts p
+      LEFT JOIN suppliers s ON p.supplier_id = s.id
       LEFT JOIN import_receipt_details pi ON p.id = pi.import_receipt_id
       WHERE CAST(p.supplier_id AS CHAR) LIKE ? OR CAST(p.id AS CHAR) LIKE ?
       GROUP BY p.id
@@ -96,8 +98,8 @@ const importReceiptModel = {
         });
       });
     });
-    },
-  
+  },
+
   deleteImportReceipt: (id) => {
     return new Promise((resolve, reject) => {
       const deleteImportReceipt = `

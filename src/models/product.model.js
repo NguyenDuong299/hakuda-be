@@ -105,7 +105,38 @@ const productModel = {
       });
     });
   },
+  getBestSellerProduct: () => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          p.*, 
+          IFNULL(SUM(oi.quantity), 0) AS total_sold,
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+              THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+              ELSE NULL
+            END
+          ) AS images
+        FROM products p
+        LEFT JOIN order_items oi ON p.id = oi.product_id
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        GROUP BY p.id
+        ORDER BY total_sold DESC
+        LIMIT 5
+      `;
 
+      connection.query(sql, (err, results) => {
+        if (err) return reject(err);
+        results.forEach((item) => {
+          if (!item.images || item.images.every((i) => i === null)) {
+            item.images = [];
+          }
+        });
+        resolve(results);
+      });
+    });
+  },
   createProduct: (product) => {
     const now = new Date();
     const { images = [], stock_quantity, ...productData } = product;
@@ -143,7 +174,39 @@ const productModel = {
       });
     });
   },
+  getRelatedProduct: (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          p.*, 
+          JSON_ARRAYAGG(
+            CASE 
+              WHEN pi.image_url IS NOT NULL AND pi.isThumbnail IS NOT NULL 
+              THEN JSON_OBJECT('image_url', pi.image_url, 'isThumbnail', pi.isThumbnail)
+              ELSE NULL
+            END
+          ) AS images
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        WHERE p.id != ? AND (
+          p.brand_id = (SELECT brand_id FROM products WHERE id = ?)
+          OR p.product_line_id = (SELECT product_line_id FROM products WHERE id = ?)
+        )
+        GROUP BY p.id
+        LIMIT 4
+      `;
 
+      connection.query(sql, [id, id, id], (err, results) => {
+        if (err) return reject(err);
+        results.forEach((item) => {
+          if (!item.images || item.images.every((i) => i === null)) {
+            item.images = [];
+          }
+        });
+        resolve(results);
+      });
+    });
+  },
   getProductById: (id) => {
     return new Promise((resolve, reject) => {
       const sql = `

@@ -9,7 +9,7 @@ const importReceiptController = {
       const offset = (page - 1) * limit;
       const search = req.query.search || "";
 
-      const totalImportReceipt = await ImportReceipt.getAllImportReceipt(search);
+      const totalImportReceipt = await ImportReceipt.getTotalImportReceipt(search);
       const importReceipts = await ImportReceipt.getAllImportReceipt(limit, offset, search);
       res.json({ page, totalImportReceipt, importReceipts });
     } catch (err) {
@@ -21,7 +21,7 @@ const importReceiptController = {
     try {
       const { supplier_id, import_date, total_amount, note, import_receipt_details = [] } = req.body;
 
-      if (!supplier_id || !import_date || !total_amount || !note || import_receipt_details.length === 0) {
+      if (!supplier_id || !import_date || !total_amount || import_receipt_details.length === 0) {
         return res.status(400).json({ message: "Thiếu thông tin hoá đơn!" });
       }
       const result = await ImportReceipt.createImportReceipt({

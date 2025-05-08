@@ -3,7 +3,7 @@ const connection = require("../config/db");
 const supplierModel = {
   getAllSupplier: () => {
     return new Promise((resolve, reject) => {
-      connection.query("SELECT * FROM suppliers", (err, results) => {
+      connection.query("SELECT * FROM suppliers ORDER BY createdAt DESC", (err, results) => {
         if (err) reject(err);
         resolve(results);
       });
