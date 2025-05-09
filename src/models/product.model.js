@@ -105,7 +105,7 @@ const productModel = {
       });
     });
   },
-  getBestSellerProduct: () => {
+  getBestSellerProducts: () => {
     return new Promise((resolve, reject) => {
       const sql = `
         SELECT 
@@ -210,23 +210,27 @@ const productModel = {
   getProductById: (id) => {
     return new Promise((resolve, reject) => {
       const sql = `
-      SELECT 
-        p.*, 
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'image_url', pi.image_url, 
-            'isThumbnail', pi.isThumbnail
-          )
-        ) AS images
-      FROM products p
-      LEFT JOIN product_images pi ON p.id = pi.product_id
-      WHERE p.id = ?
-      GROUP BY p.id
-    `;
+        SELECT 
+          p.*, 
+          b.name AS brand_name,
+          pl.name AS product_line_name,
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'image_url', pi.image_url, 
+              'isThumbnail', pi.isThumbnail
+            )
+          ) AS images
+        FROM products p
+        LEFT JOIN brands b ON p.brand_id = b.id
+        LEFT JOIN product_lines pl ON p.product_line_id = pl.id
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        WHERE p.id = ?
+        GROUP BY p.id
+      `;
 
       connection.query(sql, [id], (err, results) => {
         if (err) return reject(err);
-        resolve(results[0]); // Trả về một object thay vì array
+        resolve(results[0]);
       });
     });
   },

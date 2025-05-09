@@ -32,6 +32,7 @@ const importReceiptModel = {
       LEFT JOIN import_receipt_details pi ON p.id = pi.import_receipt_id
       WHERE CAST(p.supplier_id AS CHAR) LIKE ? OR CAST(p.id AS CHAR) LIKE ?
       GROUP BY p.id
+      ORDER BY p.createdAt DESC
       LIMIT ? OFFSET ?
     `;
 

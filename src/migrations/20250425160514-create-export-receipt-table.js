@@ -24,7 +24,7 @@ module.exports = {
         allowNull: false,
       },
       total_amount: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(14, 2),
         allowNull: false,
       },
       user_id: {

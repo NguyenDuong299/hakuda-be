@@ -28,7 +28,7 @@ module.exports = {
         allowNull: true,
       },
       price: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(14, 2),
         allowNull: false,
       },
       stock_quantity: {

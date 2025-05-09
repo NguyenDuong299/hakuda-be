@@ -29,11 +29,15 @@ module.exports = {
         onDelete: "CASCADE",
       },
       total_price: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(14, 2),
         allowNull: false,
         defaultValue: 0,
       },
       recipient_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      recipient_email: {
         type: Sequelize.STRING,
         allowNull: false,
       },

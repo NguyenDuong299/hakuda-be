@@ -28,7 +28,7 @@ const productController = {
         return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
       }
 
-      if (price > 99999999) {
+      if (price > 9999999999999) {
         return res.status(400).json({ message: "Giá quá lớn!" });
       }
 
@@ -89,7 +89,7 @@ const productController = {
   },
   getBestSellerProduct: async (req, res) => {
     try {
-      const products = await Product.getBestSellerProduct();
+      const products = await Product.getBestSellerProducts();
       res.json({ products });
     } catch (err) {
       res.status(500).json({ error: err.message });

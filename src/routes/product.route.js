@@ -10,7 +10,7 @@ router.get("/filter/new", productController.getNewProduct);
 router.get("/filter/bestseller", productController.getBestSellerProduct);
 router.get("/filter/related/:id", productController.getRelatedProduct);
 router.get("/filter/hot", productController.getHotProduct);
-router.get("/filter/suggest/:id", productController.getSugestProduct);
+router.get("/filter/suggest", productController.getSugestProduct);
 router.post("/", productController.createProduct);
 router.put("/:id", productController.updateProduct);
 router.delete("/:id", productController.deleteProduct);

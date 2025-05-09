@@ -24,7 +24,7 @@ module.exports = {
         allowNull: false,
       },
       import_price: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(14, 2),
         allowNull: false,
       },
       product_id: {

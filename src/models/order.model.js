@@ -5,7 +5,7 @@ const orderModel = {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
       const sql = `
-      SELECT
+ SELECT
   o.*,
   JSON_ARRAYAGG(
     JSON_OBJECT(
@@ -16,7 +16,17 @@ const orderModel = {
       'quantity', oi.quantity,
       'price', oi.price,
       'product_name', p.name,
-      'product_id', p.id
+      'product_id', p.id,
+      'images', (
+        SELECT JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'image_url', pi.image_url,
+            'isThumbnail', pi.isThumbnail
+          )
+        )
+        FROM product_images pi
+        WHERE pi.product_id = p.id
+      )
     )
   ) AS order_items
 FROM orders o
@@ -98,21 +108,21 @@ LIMIT ? OFFSET ?
   },
   createOrder: (orderData) => {
     return new Promise((resolve, reject) => {
-      const { user_id, recipient_name, recipient_phone, recipient_address, total_price, note, order_items = [] } = orderData;
+      const { user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note, order_items = [] } = orderData;
 
       if (!order_items.length) {
         return reject(new Error("Order must contain at least one item."));
       }
 
       const insertOrderSql = `
-      INSERT INTO orders (user_id, recipient_name, recipient_phone, recipient_address, total_price, note)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO orders (user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
       connection.beginTransaction((err) => {
         if (err) return reject(err);
 
-        connection.query(insertOrderSql, [user_id, recipient_name, recipient_phone, recipient_address, total_price, note], (err, result) => {
+        connection.query(insertOrderSql, [user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note], (err, result) => {
           if (err) return connection.rollback(() => reject(err));
 
           const orderId = result.insertId;
