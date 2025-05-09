@@ -97,7 +97,6 @@ const authController = {
       const { oldPassword, newPassword, confirmPassword } = req.body;
       const userId = req.user.id;
       const user = await User.getById(userId);
-      console.log(req.user.id);
       if (!user) return res.status(404).json({ message: "Không tìm thấy thông tin người dùng" });
 
       const validPassword = await bcrypt.compare(oldPassword, user.password);

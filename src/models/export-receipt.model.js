@@ -31,6 +31,7 @@ const exportReceiptModel = {
       LEFT JOIN export_receipt_details pi ON p.id = pi.export_receipt_id
       WHERE CAST(p.user_id AS CHAR) LIKE ? OR p.status LIKE ?
       GROUP BY p.id
+      ORDER BY p.createdAt DESC
       LIMIT ? OFFSET ?
     `;
 

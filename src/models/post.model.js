@@ -62,7 +62,11 @@ const postModel = {
 
   updatePost: (id, post) => {
     return new Promise((resolve, reject) => {
-      connection.query("UPDATE posts SET ? WHERE id = ?", [post, id], (err, results) => {
+      const updatedPost = {
+        ...post,
+        updated_at: new Date(),
+      };
+      connection.query("UPDATE posts SET ? WHERE id = ?", [updatedPost, id], (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });

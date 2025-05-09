@@ -26,6 +26,7 @@ LEFT JOIN brands b ON p.brand_id = b.id
 LEFT JOIN product_lines pl ON p.product_line_id = pl.id
 WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
 GROUP BY o.id
+ORDER BY o.createdAt DESC
 LIMIT ? OFFSET ?
           `;
 
