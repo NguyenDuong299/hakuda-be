@@ -120,7 +120,6 @@ const authController = {
   },
   getMyProfile: (req, res) => {
     const userId = req.user.id;
-    console.log(userId);
     User.getById(userId)
       .then((user) => {
         const userProfile = user;
