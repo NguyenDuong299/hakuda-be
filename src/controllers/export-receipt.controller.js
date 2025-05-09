@@ -39,7 +39,7 @@ const exportReceiptController = {
     try {
       const { order_id, export_date, total_amount, user_id, status, export_receipt_details = [] } = req.body;
 
-      if (!order_id || !export_date || !total_amount || !user_id || !status || export_receipt_details.length === 0) {
+      if ( !export_date || !total_amount || !user_id || !status || export_receipt_details.length === 0) {
         return res.status(400).json({ message: "Thiếu thông tin biên lai!" });
       }
       const result = await ExportReceipt.createExportReceipt({
