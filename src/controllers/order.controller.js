@@ -40,7 +40,7 @@ const orderController = {
         order_items,
         note,
       });
-
+      const formatPrice = total_price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
       // Gửi email thông báo khi tạo đơn hàng thành công
       const htmlContent = `
         <h1>Cảm ơn bạn đã đặt hàng tại Bandai Shop!</h1>
@@ -49,12 +49,11 @@ const orderController = {
         <p><strong>Email:</strong> ${recipient_email}</p>
         <p><strong>Số điện thoại:</strong> ${recipient_phone}</p>
         <p><strong>Địa chỉ nhận:</strong> ${recipient_address}</p>
-        <p><strong>Tổng giá trị:</strong> ${total_price} VND</p>
+        <p><strong>Tổng giá trị:</strong> ${formatPrice} VND</p>
         <p><strong>Trạng thái:</strong> Chờ xác nhận</p>
         <p><strong>Ghi chú:</strong> ${note ? note : "Không có ghi chú"}</p>
         <p>Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất. Cảm ơn bạn đã tin tưởng mua sắm tại Bandai Shop!</p>
       `;
-
       // Gửi email thông báo
       await sendOrderStatusEmail(recipient_email, "Xác nhận đơn hàng của bạn tại Hakuda Shop", htmlContent);
 
