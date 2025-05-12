@@ -47,7 +47,8 @@ const voucherModel = {
       const sql = `
         SELECT * FROM vouchers 
         WHERE code = ? 
-          AND quantity > 0 
+          AND quantity > 0
+          AND startDate <= ?
           AND endDate >= ?
       `;
 
@@ -55,7 +56,7 @@ const voucherModel = {
         if (err) return reject(err);
 
         if (results.length === 0) {
-          return reject(new Error("Voucher không hợp lệ hoặc đã hết hạn / hết số lượng"));
+          return reject(new Error("Voucher không hợp lệ!"));
         }
 
         resolve(results[0]);
@@ -86,6 +87,14 @@ const voucherModel = {
 
     return new Promise((resolve, reject) => {
       connection.query("UPDATE vouchers SET ? WHERE id = ?", [newVoucher, id], (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  },
+  decreaseVoucherQuantity: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query("UPDATE vouchers SET quantity = quantity - 1 WHERE id = ?", [id], (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });

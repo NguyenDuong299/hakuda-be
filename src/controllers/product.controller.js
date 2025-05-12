@@ -19,7 +19,14 @@ const productController = {
       res.status(500).json({ error: err.message });
     }
   },
-
+  getAllProduct: async (req, res) => {
+    try {
+      const products = await Product.getAllProducts();
+      res.json({ products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
   createProduct: async (req, res) => {
     try {
       const { name, description, detail, price, stock_quantity = 0, isDiscount, hot, brand_id, product_line_id, images } = req.body;

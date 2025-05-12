@@ -25,13 +25,8 @@ const voucherController = {
         return res.status(400).json({ message: "Vui lòng nhập đầy đủ các trường!" });
       }
 
-      const now = new Date();
       const start = new Date(startDate);
       const end = new Date(endDate);
-
-      if (start < new Date(now.setHours(0, 0, 0, 0))) {
-        return res.status(400).json({ message: "Ngày bắt đầu không được ở trong quá khứ!" });
-      }
 
       if (start >= end) {
         return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!" });

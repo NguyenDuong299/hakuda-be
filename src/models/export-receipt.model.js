@@ -29,13 +29,13 @@ const exportReceiptModel = {
         ) AS export_receipt_details
       FROM export_receipts p
       LEFT JOIN export_receipt_details pi ON p.id = pi.export_receipt_id
-      WHERE CAST(p.user_id AS CHAR) LIKE ? OR p.status LIKE ?
+      WHERE p.id LIKE ?
       GROUP BY p.id
       ORDER BY p.createdAt DESC
       LIMIT ? OFFSET ?
     `;
 
-      connection.query(sql, [searchQuery, searchQuery, limit, offset], (err, results) => {
+      connection.query(sql, [searchQuery, limit, offset], (err, results) => {
         if (err) return reject(err);
         results.forEach((item) => {
           if (!item.export_receipt_details || item.export_receipt_details.length === 0 || item.export_receipt_details.every((item) => item === null)) {

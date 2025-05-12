@@ -20,7 +20,7 @@ const importReceiptModel = {
         JSON_ARRAYAGG(
             JSON_OBJECT(
               'id', pi.id,
-              'product_id', pi.product_id,
+              'product_id', pi.product_id,  
               'quantity', pi.quantity,
               'import_price', pi.import_price,
               'createdAt', pi.createdAt,
@@ -30,7 +30,7 @@ const importReceiptModel = {
       FROM import_receipts p
       LEFT JOIN suppliers s ON p.supplier_id = s.id
       LEFT JOIN import_receipt_details pi ON p.id = pi.import_receipt_id
-      WHERE CAST(p.supplier_id AS CHAR) LIKE ? OR CAST(p.id AS CHAR) LIKE ?
+      WHERE CAST(s.name AS CHAR) LIKE ? OR p.note LIKE ?
       GROUP BY p.id
       ORDER BY p.createdAt DESC
       LIMIT ? OFFSET ?

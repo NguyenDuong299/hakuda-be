@@ -34,7 +34,7 @@ LEFT JOIN order_items oi ON o.id = oi.order_id
 LEFT JOIN products p ON oi.product_id = p.id
 LEFT JOIN brands b ON p.brand_id = b.id
 LEFT JOIN product_lines pl ON p.product_line_id = pl.id
-WHERE o.total_price LIKE ? OR o.recipient_name LIKE ?
+WHERE o.recipient_phone LIKE ? OR o.recipient_name LIKE ?
 GROUP BY o.id
 ORDER BY o.createdAt DESC
 LIMIT ? OFFSET ?
@@ -61,7 +61,7 @@ LIMIT ? OFFSET ?
       const sql = `
             SELECT COUNT(*) AS total 
             FROM orders 
-            WHERE total_price LIKE ? OR recipient_name LIKE ?
+            WHERE recipient_phone LIKE ? OR recipient_name LIKE ?
           `;
 
       connection.query(sql, [searchQuery, searchQuery], (err, results) => {
@@ -108,21 +108,21 @@ LIMIT ? OFFSET ?
   },
   createOrder: (orderData) => {
     return new Promise((resolve, reject) => {
-      const { user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note, order_items = [] } = orderData;
+      const { user_id, voucher_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note, order_items = [] } = orderData;
 
       if (!order_items.length) {
         return reject(new Error("Order must contain at least one item."));
       }
-
+      const safeVoucherId = voucher_id && voucher_id !== 0 ? voucher_id : null;
       const insertOrderSql = `
-      INSERT INTO orders (user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO orders (user_id, voucher_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
       connection.beginTransaction((err) => {
         if (err) return reject(err);
 
-        connection.query(insertOrderSql, [user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note], (err, result) => {
+        connection.query(insertOrderSql, [user_id, safeVoucherId, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, note], (err, result) => {
           if (err) return connection.rollback(() => reject(err));
 
           const orderId = result.insertId;

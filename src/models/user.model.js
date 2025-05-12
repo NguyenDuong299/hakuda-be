@@ -98,6 +98,7 @@ const UserModel = {
         if (role === "1") {
           return reject(new Error("Không thể chỉnh sửa người dùng admin."));
         }
+        user.updated_at = new Date();
 
         connection.query("UPDATE users SET ? WHERE id = ?", [user, id], (err, results) => {
           if (err) return reject(err);

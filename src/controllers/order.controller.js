@@ -1,5 +1,6 @@
 const Order = require("../models/order.model");
 const ExportReceipt = require("../models/export-receipt.model");
+const Voucher = require("../models/voucher.model");
 const { sendOrderStatusEmail } = require("../utils/mailer");
 
 const orderController = {
@@ -20,7 +21,7 @@ const orderController = {
   },
   createOrder: async (req, res) => {
     try {
-      const { user_id, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, order_items, note } = req.body;
+      const { user_id, voucher_id = null, recipient_name, recipient_email, recipient_phone, recipient_address, total_price, order_items, note } = req.body;
 
       // Kiểm tra dữ liệu đầu vào
       if (!recipient_name || !recipient_email || !recipient_phone || !recipient_address || !total_price || !Array.isArray(order_items) || order_items.length === 0) {
@@ -32,6 +33,7 @@ const orderController = {
       // Tạo đơn hàng
       const result = await Order.createOrder({
         user_id,
+        voucher_id,
         recipient_name,
         recipient_email,
         recipient_phone,
@@ -49,13 +51,13 @@ const orderController = {
         <p><strong>Email:</strong> ${recipient_email}</p>
         <p><strong>Số điện thoại:</strong> ${recipient_phone}</p>
         <p><strong>Địa chỉ nhận:</strong> ${recipient_address}</p>
-        <p><strong>Tổng giá trị:</strong> ${formatPrice} VND</p>
+        <p><strong>Tổng giá trị:</strong> ${formatPrice}</p>
         <p><strong>Trạng thái:</strong> Chờ xác nhận</p>
         <p><strong>Ghi chú:</strong> ${note ? note : "Không có ghi chú"}</p>
         <p>Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất. Cảm ơn bạn đã tin tưởng mua sắm tại Bandai Shop!</p>
       `;
       // Gửi email thông báo
-      await sendOrderStatusEmail(recipient_email, "Xác nhận đơn hàng của bạn tại Hakuda Shop", htmlContent);
+      await sendOrderStatusEmail(recipient_email, "Xác nhận đơn hàng của bạn tại Bandai Shop", htmlContent);
 
       // Trả về kết quả cho API response
       res.status(201).json(result);
@@ -76,7 +78,9 @@ const orderController = {
       }
 
       const updatedOrderResult = await Order.updateOrder(id, { status });
-
+      if (existingOrder.voucher_id) {
+        await Voucher.decreaseVoucherQuantity(existingOrder.voucher_id);
+      }
       // Nếu đơn hàng được xác nhận
       if (status === "confirmed" && existingOrder.status !== "confirmed") {
         const export_receipt_details = existingOrder.order_items.map((item) => ({
@@ -122,7 +126,7 @@ const orderController = {
           break;
         case "delivered":
           statusTitle = "Đã giao hàng thành công";
-          statusMessage = "Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã mua sắm tại Hakuda Shop!";
+          statusMessage = "Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã mua sắm tại Bandai Shop!";
           break;
         case "cancelled":
           statusTitle = "Đã huỷ";

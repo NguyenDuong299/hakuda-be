@@ -5,8 +5,8 @@ const postModel = {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
 
-      const sql = "SELECT * FROM posts WHERE title LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
-      connection.query(sql, [searchQuery, limit, offset], (err, results) => {
+      const sql = "SELECT * FROM posts WHERE title LIKE ? OR author LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+      connection.query(sql, [searchQuery, searchQuery, limit, offset], (err, results) => {
         if (err) return reject(err);
         results.map((post) => {
           post.hot = post.hot === 1 ? true : false;
@@ -19,9 +19,9 @@ const postModel = {
   getTotalPosts: (search = "") => {
     return new Promise((resolve, reject) => {
       const searchQuery = `%${search}%`;
-      const sql = "SELECT COUNT(*) AS total FROM posts WHERE title LIKE ?";
+      const sql = "SELECT COUNT(*) AS total FROM posts WHERE title LIKE ? OR author LIKE ?";
 
-      connection.query(sql, [searchQuery], (err, results) => {
+      connection.query(sql, [searchQuery, searchQuery], (err, results) => {
         if (err) reject(err);
         resolve(results[0].total);
       });

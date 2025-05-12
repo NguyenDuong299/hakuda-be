@@ -7,7 +7,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_PASS,
   },
 });
-
 const sendOrderStatusEmail = async (to, subject, htmlContent) => {
   try {
     const info = await transporter.sendMail({

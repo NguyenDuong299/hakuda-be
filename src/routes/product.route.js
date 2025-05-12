@@ -7,6 +7,7 @@ const checkRole = require("../middlewares/checkRole.middleware");
 router.get("/", productController.getAllProducts);
 router.get("/:id", productController.getProductById);
 router.get("/filter/new", productController.getNewProduct);
+router.get("/filter/all", productController.getAllProduct);
 router.get("/filter/bestseller", productController.getBestSellerProduct);
 router.get("/filter/related/:id", productController.getRelatedProduct);
 router.get("/filter/hot", productController.getHotProduct);
