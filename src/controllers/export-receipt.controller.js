@@ -25,6 +25,43 @@ const exportReceiptController = {
       res.status(500).json({ error: err.message });
     }
   },
+  getTotalRevenueByDay: async (req, res) => {
+    try {
+      const totalRevenueByDay = await ExportReceipt.getRevenueByDay();
+      res.json({ totalRevenueByDay });
+    } catch (err) {
+      console.error("Error:", err); // Log lỗi chi tiết
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getTotalRevenueByWeek: async (req, res) => {
+    try {
+      const totalRevenueByWeek = await ExportReceipt.getRevenueByMonth();
+      res.json({ totalRevenueByWeek });
+    } catch (err) {
+      console.error("Error:", err); // Log lỗi chi tiết
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getTotalRevenueByMonth: async (req, res) => {
+    try {
+      const year = new Date().getFullYear();
+      const totalRevenueByMonth = await ExportReceipt.getRevenueByMonth(year);
+      res.json({ year, totalRevenueByMonth });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+  getTotalRevenueByYear: async (req, res) => {
+    try {
+      const totalRevenueByYear = await ExportReceipt.getRevenueByYear();
+      res.json({ totalRevenueByYear });
+    } catch (err) {
+      console.error("Error:", err); // Log lỗi chi tiết
+      res.status(500).json({ error: err.message });
+    }
+  },
   getExportReceiptById: async (req, res) => {
     try {
       const { id } = req.params;

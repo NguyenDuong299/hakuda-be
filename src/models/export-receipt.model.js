@@ -190,6 +190,71 @@ const exportReceiptModel = {
       });
     });
   },
+  getRevenueByDay: (date) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT SUM(total_amount) AS revenue
+        FROM export_receipts
+        WHERE status = 'completed'
+        AND DATE(export_date) = ?
+      `;
+      connection.query(sql, [date], (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0].revenue || 0);
+      });
+    });
+  },
+  getRevenueByMonth: (year) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          MONTH(export_date) AS month,
+          SUM(total_amount) AS revenue
+        FROM export_receipts
+        WHERE status = 'completed'
+          AND YEAR(export_date) = ?
+        GROUP BY MONTH(export_date)
+        ORDER BY month
+      `;
+      connection.query(sql, [year], (err, results) => {
+        if (err) return reject(err);
+        const revenueByMonth = Array(12).fill(0);
+        results.forEach((row) => {
+          revenueByMonth[row.month - 1] = row.revenue || 0;
+        });
+        resolve(revenueByMonth);
+      });
+    });
+  },
+  getRevenueByYear: (year) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT SUM(total_amount) AS revenue
+        FROM export_receipts
+        WHERE status = 'completed'
+        AND YEAR(export_date) = ?
+      `;
+      connection.query(sql, [year], (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0].revenue || 0);
+      });
+    });
+  },
+  getRevenueByWeek: (year, week) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT SUM(total_amount) AS revenue
+        FROM export_receipts
+        WHERE status = 'completed'
+        AND YEARWEEK(export_date, 1) = ?
+      `;
+      const yearWeek = parseInt(`${year}${week.toString().padStart(2, "0")}`);
+      connection.query(sql, [yearWeek], (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0].revenue || 0);
+      });
+    });
+  },
 };
 
 module.exports = exportReceiptModel;
